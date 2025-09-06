@@ -1,0 +1,399 @@
+<template>
+  <section id="production" class="production-section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Фотографии производства</h2>
+        <p class="section-subtitle">
+          Современное оборудование и технологии изготовления металлоконструкций
+        </p>
+      </div>
+      
+      <div class="production-grid">
+        <div 
+          v-for="(item, index) in productionItems" 
+          :key="index"
+          class="production-item"
+          :class="`item-${index + 1}`"
+        >
+          <div class="production-image">
+            <img :src="item.image" :alt="item.title" class="production-img" />
+            <div class="overlay">
+              <div class="overlay-content">
+                <div class="overlay-icon">📸</div>
+                <div class="overlay-text">Нажмите для просмотра</div>
+              </div>
+            </div>
+          </div>
+          <div class="production-info">
+            <h3>{{ item.title }}</h3>
+            <p>{{ item.description }}</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="production-stats">
+        <div class="stat-item">
+          <div class="stat-number">50+</div>
+          <div class="stat-label">Единиц оборудования</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">1000м²</div>
+          <div class="stat-label">Производственная площадь</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">24/7</div>
+          <div class="stat-label">Режим работы</div>
+        </div>
+      </div>
+    </div>
+  </section>
+</template>
+
+<script setup lang="ts">
+const productionItems = [
+  {
+    icon: '🏭',
+    title: 'Лазерный станок',
+    description: 'METORN (МЕТОРН) 1500*3000',
+    image: '/img/production/laser.jpg'
+  },
+  {
+    icon: '🔧',
+    title: 'Сварочное производство',
+    description: 'Автоматизированные сварочные линии и ручная сварка',
+    image: '/img/production/proizvodstvo.jpg'
+  },
+  {
+    icon: '⚙️',
+    title: 'Маленький ленточнопильный станок',
+    description: 'Stalex BS-1018B',
+    image: '/img/production/saw.bmp'
+  },
+  {
+    icon: '🎨',
+    title: 'Пеллетный котел',
+    description: 'FACI 455',
+    image: '/img/production/bake.jpeg'
+  },
+  {
+    icon: '📦',
+    title: 'Большой ленточнопильный станок',
+    description: 'Stalex BS-2114Т',
+    image: '/img/production/lentopil-mini.bmp'
+  },
+  {
+    icon: '🔬',
+    title: 'Винтовой компрессор',
+    description: 'Magnus AE1-15ATD LD 16 IP55',
+    image: '/img/production/compressor.jpeg'
+  }
+]
+</script>
+
+<style scoped>
+.production-section {
+  padding: var(--section-padding);
+  background: var(--white);
+  position: relative;
+  overflow: hidden;
+}
+
+.production-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background: linear-gradient(135deg, var(--accent-50) 0%, var(--primary-50) 100%);
+  opacity: 0.3;
+}
+
+.production-section::after {
+  content: '';
+  position: absolute;
+  bottom: -10%;
+  left: -10%;
+  width: 400px;
+  height: 400px;
+  background: var(--accent-100);
+  border-radius: 50%;
+  opacity: 0.2;
+}
+
+.container {
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.section-title {
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--gray-800);
+  margin-bottom: 1rem;
+}
+
+.section-subtitle {
+  font-size: var(--font-size-xl);
+  color: var(--gray-600);
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: var(--line-height-relaxed);
+}
+
+.production-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 2rem;
+  margin-bottom: 4rem;
+}
+
+.production-item {
+  background: var(--white);
+  border-radius: var(--radius-2xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--gray-100);
+  transition: var(--transition-normal);
+  cursor: pointer;
+  position: relative;
+}
+
+.production-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--gradient-primary);
+  transform: scaleX(0);
+  transition: var(--transition-normal);
+}
+
+.production-item:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-2xl);
+  border-color: var(--primary-color);
+}
+
+.production-item:hover::before {
+  transform: scaleX(1);
+}
+
+.production-image {
+  position: relative;
+  height: 250px;
+  overflow: hidden;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.production-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: var(--transition-normal);
+}
+
+.production-item:hover .production-img {
+  transform: scale(1.05);
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: var(--transition-normal);
+}
+
+.production-item:hover .overlay {
+  opacity: 1;
+}
+
+.overlay-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  color: white;
+}
+
+.overlay-icon {
+  font-size: 2.5rem;
+}
+
+.overlay-text {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+}
+
+.production-info {
+  padding: 1.5rem;
+}
+
+.production-info h3 {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--gray-800);
+  margin-bottom: 0.5rem;
+}
+
+.production-info p {
+  color: var(--gray-600);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-relaxed);
+}
+
+.production-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-top: 4rem;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 2.5rem;
+  background: var(--white);
+  border-radius: var(--radius-2xl);
+  border: 1px solid var(--gray-100);
+  transition: var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--gradient-primary);
+  transform: scaleX(0);
+  transition: var(--transition-normal);
+}
+
+.stat-item:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-2xl);
+  border-color: var(--primary-color);
+  background: var(--primary-50);
+}
+
+.stat-item:hover::before {
+  transform: scaleX(1);
+}
+
+.stat-number {
+  font-size: var(--font-size-5xl);
+  font-weight: var(--font-weight-bold);
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.stat-label {
+  font-size: var(--font-size-base);
+  color: var(--gray-700);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Специальные стили для разных элементов */
+.item-1 .production-image {
+  background: linear-gradient(135deg, #e6f3ff 0%, #f0f7ff 100%);
+}
+
+.item-2 .production-image {
+  background: linear-gradient(135deg, #fff5e6 0%, #fff8f0 100%);
+}
+
+.item-3 .production-image {
+  background: linear-gradient(135deg, #f0f7ff 0%, #e6f3ff 100%);
+}
+
+.item-4 .production-image {
+  background: linear-gradient(135deg, #fff0f0 0%, #fff5f5 100%);
+}
+
+.item-5 .production-image {
+  background: linear-gradient(135deg, #f0fff0 0%, #f5fff5 100%);
+}
+
+.item-6 .production-image {
+  background: linear-gradient(135deg, #f8f0ff 0%, #f5f0ff 100%);
+}
+
+/* Адаптивность */
+@media (max-width: 1024px) {
+  .production-grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 1rem;
+  }
+  
+  .section-title {
+    font-size: var(--font-size-3xl);
+  }
+  
+  .section-subtitle {
+    font-size: var(--font-size-lg);
+  }
+  
+  .production-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .production-image {
+    height: 200px;
+  }
+  
+  .placeholder-icon {
+    font-size: 3rem;
+  }
+  
+  .placeholder-text {
+    font-size: var(--font-size-base);
+  }
+  
+  .production-info {
+    padding: 1rem;
+  }
+  
+  .production-stats {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .stat-item {
+    padding: 1.5rem;
+  }
+  
+  .stat-number {
+    font-size: var(--font-size-3xl);
+  }
+}
+</style> 

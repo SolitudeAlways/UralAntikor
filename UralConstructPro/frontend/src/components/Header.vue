@@ -1,250 +1,151 @@
 <template>
-  <header class="header" @mouseenter="hover = true" @mouseleave="hover = false">
-    <div class="header-bg" :class="{ active: hover }"></div>
-    <div class="header-overlay">
-      <div class="logo-block">
-        <img class="logo-img" src="../img/logo.png" alt="Логотип" />
-      </div>
-      <div class="nav-wrapper">
+  <header class="header">
+    <div class="container">
+      <div class="header-content">
+        <div class="brand">
+          <img src="/img/header/logo3 (1).png" alt="Логотип" class="logo-img" />
+        </div>
+
         <nav class="nav">
-          <el-button type="text" @click="scrollToSection('catalog', $event)">Каталог</el-button>
-          <el-button type="text" @click="scrollToSection('about', $event)">О нас</el-button>
-          <el-button type="text" @click="scrollToSection('contacts', $event)">Контакты</el-button>
+          <ul class="nav-list">
+            <li class="nav-item"><router-link to="/" class="nav-link">Главная</router-link></li>
+            <li class="nav-item"><a href="#about" class="nav-link">О нас</a></li>
+            <li class="nav-item"><a href="#catalog" class="nav-link">Каталог</a></li>
+            <li class="nav-item"><a href="#licenses" class="nav-link">Лицензии</a></li>
+            <li class="nav-item"><a href="#production" class="nav-link">Производство</a></li>
+          </ul>
         </nav>
+
+        <div class="header-contacts">
+          <a href="tel:+79991234567" class="contact-link">+7 (999) 123-45-67</a>
+          <a href="mailto:info@example.com" class="contact-link">info@example.com</a>
+        </div>
+
+        <!-- Кнопка бургер (справа) -->
+        <button class="burger" :aria-expanded="isMenuOpen ? 'true' : 'false'" @click="toggleMenu" aria-label="Открыть меню">
+          <svg v-if="!isMenuOpen" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="3" y="6" width="18" height="2" rx="1" fill="currentColor"/>
+            <rect x="3" y="11" width="18" height="2" rx="1" fill="currentColor"/>
+            <rect x="3" y="16" width="18" height="2" rx="1" fill="currentColor"/>
+          </svg>
+          <svg v-else width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
       </div>
-      <div class="slogan">
-        <span>Надёжные металлоконструкции для вашего бизнеса</span>
-      </div>
-      <div class="contacts">
-        <div class="phone">+7 (900) 123-45-67</div>
-        <div class="phone">+7 (900) 765-43-21</div>
-        <div class="email">info@metallsite.ru</div>
-      </div>
+
+      <!-- Оверлей для клика вне меню -->
+      <div v-if="isMobile && isMenuOpen" class="menu-overlay" @click="closeMenu"></div>
+
+      <!-- Мобильное меню рисуем внутри header, сразу под контентом -->
+      <transition name="menu-fade">
+        <div v-if="isMobile && isMenuOpen" class="mobile-menu">
+          <ul class="nav-list mobile-list">
+            <li class="nav-item" @click="closeMenu"><router-link to="/" class="nav-link">Главная</router-link></li>
+            <li class="nav-item" @click="closeMenu"><a href="#about" class="nav-link">О нас</a></li>
+            <li class="nav-item" @click="closeMenu"><a href="#catalog" class="nav-link">Каталог</a></li>
+            <li class="nav-item" @click="closeMenu"><a href="#licenses" class="nav-link">Лицензии</a></li>
+            <li class="nav-item" @click="closeMenu"><a href="#production" class="nav-link">Производство</a></li>
+          </ul>
+        </div>
+      </transition>
     </div>
   </header>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 
-const hover = ref(false)
+const isMenuOpen = ref(false)
+const isMobile = ref(false)
 
-const scrollToSection = (sectionId: string, event: Event) => {
-  // Анимация кнопки при клике
-  const button = event.currentTarget as HTMLElement
-  if (button) {
-    button.style.transform = 'scale(0.95)'
-    button.style.transition = 'transform 0.1s ease'
-    
-    setTimeout(() => {
-      button.style.transform = 'scale(1)'
-    }, 100)
-  }
-  
-  // Плавная прокрутка к секции
-  const element = document.getElementById(sectionId)
-  if (element) {
-    element.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start'
-    })
-  }
+const toggleMenu = () => { if (isMobile.value) isMenuOpen.value = !isMenuOpen.value }
+const closeMenu = () => { isMenuOpen.value = false }
+
+const onKeydown = (e: KeyboardEvent) => { if (e.key === 'Escape') closeMenu() }
+const handleResize = () => {
+  isMobile.value = window.innerWidth < 1024
+  if (!isMobile.value) closeMenu()
 }
+
+onMounted(() => {
+  window.addEventListener('keydown', onKeydown)
+  window.addEventListener('resize', handleResize)
+  handleResize()
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', onKeydown)
+  window.removeEventListener('resize', handleResize)
+})
+
+defineEmits<{
+  scrollToSection: [section: string]
+}>()
 </script>
 
 <style scoped>
-.header {
-  width: 100vw;
-  min-height: 180px;
-  position: relative;
-  left: 50%;
-  right: 50%;
-  margin-left: -50vw;
-  margin-right: -50vw;
-  display: flex;
-  align-items: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-  overflow: hidden;
-}
-.header-bg {
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  z-index: 0;
-  background: url('../img/header.jpg') center center/cover no-repeat;
-  transition: filter 0.4s, transform 0.4s;
-  filter: brightness(0.7);
-  transform: scale(1);
-}
-.header-bg.active {
-  filter: brightness(0.5) blur(1px);
-  transform: scale(1.05);
-}
-.header-overlay {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 32px;
-  min-height: 180px;
-}
-.logo-block {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  min-width: 90px;
-}
-.logo-img {
-  width: 128px;
-  height: 128px;
-  object-fit: contain;
-  border-radius: 12px;
-  transition: transform 0.3s ease, filter 0.3s ease;
-  cursor: pointer;
-}
+:root { --header-height: 220px; }
+.header { position: relative; background: #ffffff; border-bottom: 1px solid var(--glass-border); transition: var(--transition-normal); }
+.container { max-width: var(--container-max-width); margin: 0 auto; padding: 0 2rem; }
+.header-content { display: flex; align-items: center; justify-content: flex-start; height: var(--header-height); }
+.brand { display: flex; align-items: center; }
+.logo-img { max-height: calc(var(--header-height) - 40px); height: auto; width: auto; max-width: 140px; object-fit: contain; display: block; }
+.nav { flex: 1; display: flex; justify-content: center; }
+.nav-list { display: flex; align-items: center; gap: 1.5rem; list-style: none; margin: 0; padding: 0; }
+.nav-link { color: var(--gray-700); text-decoration: none; padding: 0.5rem 0.75rem; border-radius: var(--radius-md); transition: var(--transition-normal); }
+.nav-link:hover { color: var(--primary-color); background: var(--primary-50); }
+.header-contacts { margin-left: auto; display: flex; flex-direction: column; gap: 4px; align-items: center; }
+.contact-link { color: var(--gray-800); text-decoration: none; font-weight: var(--font-weight-medium);}
+.contact-link:hover { color: var(--primary-color); }
 
-.logo-img:hover {
-  transform: scale(1.05);
-  filter: brightness(1.1);
-}
-.nav-wrapper {
-  position: absolute;
-  top: 24px;
-  left: 0;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  z-index: 2;
-  pointer-events: none;
-}
-.nav {
-  display: flex;
-  flex-direction: row;
-  gap: 12px;
-  align-items: center;
-  background: rgba(0,0,0,0.12);
-  border-radius: 12px;
-  padding: 8px 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  pointer-events: auto;
-}
-.nav .el-button,
-.nav .el-button span,
-.nav .el-button__text {
-  color: #fff !important;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.18);
-}
-.nav .el-button:hover,
-.nav .el-button:focus,
-.nav .el-button:active,
-.nav .el-button:hover span,
-.nav .el-button:focus span,
-.nav .el-button:active span {
-  color: #fff !important;
-}
+/* Бургер справа */
+.burger { display: none; margin-left: 12px; width: 44px; height: 44px; border-radius: 8px; border: 1px solid var(--gray-200); background: var(--white); align-items: center; justify-content: center; color: var(--gray-700); }
 
-.nav .el-button {
-  transition: all 0.2s ease;
-  position: relative;
-  overflow: hidden;
-  background: rgba(0,0,0,0.18);
-  border-radius: 8px;
-  padding: 8px 16px;
-}
+/* Оверлей поверх страницы для клика вне */
+.menu-overlay { position: fixed; inset: 0; background: transparent; z-index: 9; }
 
-.nav .el-button:hover {
-  background: rgba(0,0,0,0.35);
-  transform: translateY(-1px);
-}
+/* Мобильное меню под шапкой */
+.mobile-menu { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border-bottom: 1px solid var(--gray-100); box-shadow: var(--shadow-lg); z-index: 10; }
+.mobile-list { flex-direction: column; align-items: flex-start; gap: 0.5rem; padding: 1rem 0; }
 
-.nav .el-button:active {
-  transform: scale(0.95) translateY(0);
-  background: rgba(0,0,0,0.45);
-  transition: transform 0.1s ease, background 0.1s ease;
-}
-.slogan {
-  flex: 1;
-  text-align: center;
-  color: #fff;
-  font-size: 1.8rem;
-  font-weight: 700;
-  font-family: 'Inter', sans-serif;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.25);
-  letter-spacing: -0.02em;
-  line-height: 1.3;
-}
-.contacts {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  color: #fff;
-  font-size: 1rem;
-  font-family: 'Inter', sans-serif;
-  gap: 4px;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.18);
-}
-.phone {
-  font-weight: 600;
-  letter-spacing: 0.01em;
-}
-.email {
-  font-size: 0.98rem;
-  font-weight: 400;
-  opacity: 0.9;
-  letter-spacing: 0.02em;
-}
-@media (max-width: 900px) {
-  .header-overlay {
-    flex-direction: column;
-    align-items: stretch;
-    padding: 16px;
-    min-height: 200px;
-  }
-  .logo-block {
+@media (max-width: 1024px) {
+  .container { padding: 0 1.5rem; }
+  .nav-list { display: none; }
+  .burger { display: inline-flex; margin-left: auto; }
+  /* контакты остаются видимыми */
+  .mobile-list { display: flex !important; }
+    .header-contacts { margin-left: 0;       /* убираем автоматическое смещение вправо */
+    margin-right: 0;
     justify-content: center;
-    margin-bottom: 10px;
-  }
-  .logo-img {
-    width: 48px;
-    height: 48px;
-    margin-top: 10px;
-  }
-  .nav-wrapper {
-    position: static;
-    width: 100%;
-    margin-bottom: 12px;
-    justify-content: center;
-    pointer-events: auto;
-  }
-  .nav {
-    flex-direction: column;
-    gap: 12px;
-    padding: 8px 0;
-    margin-bottom: 0;
-  }
-  
-  .nav .el-button {
-    background: rgba(0,0,0,0.15);
-    border-radius: 6px;
-    padding: 10px 20px;
-  }
-  
-  .nav .el-button:hover {
-    background: rgba(0,0,0,0.3);
-    transform: translateY(-1px);
-  }
-  .contacts {
-    align-items: center;
-    margin-top: 10px;
-  }
-  .slogan {
-    font-size: 1.3rem;
-    font-weight: 600;
-    margin: 10px 0;
-    letter-spacing: -0.01em;
-  }
+    align-items: center;  /* оставляем вертикальное центрирование */
+    text-align: center;
+    width: 100%;}
 }
+
+@media (max-width: 768px) {
+  :root { --header-height: 100px; }
+  .container { padding: 0 1rem; }
+}
+
+/* Анимация выпадения */
+.menu-fade-enter-from { opacity: 0; transform: translateY(-8px); }
+.menu-fade-enter-active, .menu-fade-leave-active { transition: var(--transition-normal); }
+.menu-fade-leave-to { opacity: 0; transform: translateY(-8px); }
+
+@keyframes item-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes item-out { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-6px); } }
+.menu-fade-enter-active .mobile-list .nav-item { opacity: 0; animation: item-in 260ms ease forwards; }
+.menu-fade-leave-active .mobile-list .nav-item { animation: item-out 200ms ease forwards; }
+.menu-fade-enter-active .mobile-list .nav-item:nth-child(1) { animation-delay: 40ms; }
+.menu-fade-enter-active .mobile-list .nav-item:nth-child(2) { animation-delay: 80ms; }
+.menu-fade-enter-active .mobile-list .nav-item:nth-child(3) { animation-delay: 120ms; }
+.menu-fade-enter-active .mobile-list .nav-item:nth-child(4) { animation-delay: 160ms; }
+.menu-fade-enter-active .mobile-list .nav-item:nth-child(5) { animation-delay: 200ms; }
+.menu-fade-leave-active .mobile-list .nav-item:nth-child(1) { animation-delay: 120ms; }
+.menu-fade-leave-active .mobile-list .nav-item:nth-child(2) { animation-delay: 90ms; }
+.menu-fade-leave-active .mobile-list .nav-item:nth-child(3) { animation-delay: 60ms; }
+.menu-fade-leave-active .mobile-list .nav-item:nth-child(4) { animation-delay: 30ms; }
+.menu-fade-leave-active .mobile-list .nav-item:nth-child(5) { animation-delay: 0ms; }
 </style>
