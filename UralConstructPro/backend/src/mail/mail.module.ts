@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MailService } from './mail.service';
 import { EmailValidationService } from './email-validation.service';
+import { LoggerService } from '../utils/logger';
 
 @Module({
   providers: [
@@ -8,7 +9,8 @@ import { EmailValidationService } from './email-validation.service';
       provide: 'MailService',
       useClass: MailService,
     },
-    EmailValidationService
+    EmailValidationService,
+    LoggerService
   ],
   exports: ['MailService', EmailValidationService],
 })

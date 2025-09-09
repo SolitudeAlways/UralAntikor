@@ -35,9 +35,6 @@
               <div class="product-info">
                 <h3 class="product-title">{{ product.title }}</h3>
                 <p class="product-description">{{ product.description }}</p>
-                <div class="product-arrow">
-                  <span class="arrow-icon">→</span>
-                </div>
               </div>
             </div>
           </div>
@@ -99,6 +96,7 @@
                       placeholder="+7 (999) 123-45-67"
                       :class="{ error: pErrors.phone }"
                       @input="onPPhoneInput"
+                      title="Введите номер телефона. Начинайте с 8 или 9 для российских номеров"
                     />
                     <span v-if="pErrors.phone" class="error-message">{{ pErrors.phone }}</span>
                   </div>
@@ -331,18 +329,6 @@ const submitProductForm = async () => {
   margin-bottom: 1rem;
 }
 
-.product-arrow {
-  position: absolute;
-  top: 1.5rem;
-  right: 1.5rem;
-  color: var(--primary-color);
-  font-size: var(--font-size-xl);
-  transition: var(--transition-normal);
-}
-
-.product-card:hover .product-arrow {
-  transform: translateX(4px);
-}
 
 /* Модальное окно */
 .modal-overlay {

@@ -69,6 +69,7 @@
                   placeholder="+7 (999) 123-45-67"
                   :class="{ 'error': errors.phone }"
                   @input="onPhoneInput"
+                  title="Введите номер телефона. Начинайте с 8 или 9 для российских номеров"
                 />
                 <span v-if="errors.phone" class="error-message">{{ errors.phone }}</span>
               </div>

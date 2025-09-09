@@ -33,7 +33,7 @@
     <el-dialog 
       v-model="showModal" 
       :title="currentLicense?.title"
-      width="700px"
+      width="90%"
       center
       class="license-modal"
     >
@@ -253,12 +253,20 @@ const prevLicense = () => {
   border-radius: var(--radius-xl);
 }
 
+/* Переопределение ширины Element UI Dialog */
+.license-modal .el-dialog {
+  width: 90% !important;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
 .modal-content {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 500px; /* фиксированная высота */
   width: 100%;
+  padding: 1rem;
 }
 
 .modal-image {
@@ -271,11 +279,14 @@ const prevLicense = () => {
   background: var(--gray-50);
   border-radius: var(--radius-lg);
   border: 1px solid var(--gray-200);
+  overflow: hidden;
 }
 
 .modal-img {
   width: 100%;
   height: 100%;
+  max-width: 100%;
+  max-height: 100%;
   object-fit: contain; /* сохраняет пропорции, помещает изображение целиком */
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-2xl);
@@ -391,6 +402,137 @@ const prevLicense = () => {
   
   .modal-image {
     max-width: 100%;
+  }
+}
+
+/* Адаптация для планшетов */
+@media (max-width: 768px) {
+  .license-modal .el-dialog {
+    width: 95% !important;
+    max-width: none;
+  }
+  
+  .modal-overlay {
+    padding: 0.5rem;
+  }
+  
+  .modal-content {
+    height: 80vh;
+    max-height: 80vh;
+    padding: 0.5rem;
+    overflow: hidden;
+  }
+  
+  .modal-image {
+    max-width: 100%;
+    max-height: 100%;
+    height: auto;
+    border-radius: var(--radius-md);
+  }
+  
+  .modal-img {
+    width: 100%;
+    height: auto;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: var(--radius-md);
+  }
+}
+
+/* Адаптация для маленьких планшетов и больших телефонов */
+@media (max-width: 700px) {
+  .license-modal .el-dialog {
+    width: 98% !important;
+    max-width: none;
+  }
+  
+  .modal-overlay {
+    padding: 0.2rem;
+  }
+  
+  .modal-content {
+    height: 75vh;
+    max-height: 75vh;
+    padding: 0.2rem;
+    overflow: hidden;
+  }
+  
+  .modal-image {
+    max-width: 100%;
+    max-height: 100%;
+    height: auto;
+    border-radius: var(--radius-sm);
+  }
+  
+  .modal-img {
+    width: 100%;
+    height: auto;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: var(--radius-sm);
+  }
+}
+
+/* Адаптация для телефонов */
+@media (max-width: 480px) {
+  .modal-overlay {
+    padding: 0.1rem;
+  }
+  
+  .modal-content {
+    height: 80vh;
+    max-height: 80vh;
+    padding: 0.1rem;
+    overflow: hidden;
+  }
+  
+  .modal-image {
+    max-width: 100%;
+    max-height: 100%;
+    height: auto;
+    border-radius: var(--radius-sm);
+  }
+  
+  .modal-img {
+    width: 100%;
+    height: auto;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: var(--radius-sm);
+  }
+}
+
+/* Адаптация для маленьких телефонов */
+@media (max-width: 375px) {
+  .modal-overlay {
+    padding: 0.05rem;
+  }
+  
+  .modal-content {
+    height: 75vh;
+    max-height: 75vh;
+    padding: 0.05rem;
+  }
+  
+  .modal-image {
+    border-radius: var(--radius-xs);
+  }
+  
+  .modal-img {
+    border-radius: var(--radius-xs);
+  }
+}
+
+/* Адаптация для очень маленьких экранов */
+@media (max-width: 320px) {
+  .modal-overlay {
+    padding: 0.025rem;
+  }
+  
+  .modal-content {
+    height: 70vh;
+    max-height: 70vh;
+    padding: 0.025rem;
   }
 }
 </style> 

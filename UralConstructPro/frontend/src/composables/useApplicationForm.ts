@@ -26,29 +26,66 @@ export function useApplicationForm() {
     description: ''
   })
 
-  // Маска телефона (сохраняем оригинальную логику)
+  // Маска телефона с автоопределением региона
   const formatPhone = (digits: string): string => {
     const d = (digits || '').replace(/\D/g, '')
     if (!d) return ''
+    
     const parts: string[] = []
-    parts.push('+', d.substring(0, 1))
-    if (d.length > 1) {
-      const a = d.substring(1, 4)
-      parts.push(' ', '(', a)
-      if (a.length === 3) parts.push(')')
+    
+    // Автоопределение кода страны
+    if (d.startsWith('7')) {
+      parts.push('+7')
+    } else if (d.startsWith('8')) {
+      parts.push('+7')
+    } else if (d.startsWith('9')) {
+      parts.push('+7')
+    } else {
+      parts.push('+', d.substring(0, 1))
     }
-    if (d.length > 4) {
-      const b = d.substring(4, 7)
-      parts.push(' ', b)
+    
+    // Форматирование номера
+    if (d.startsWith('7') || d.startsWith('8') || d.startsWith('9')) {
+      const number = d.startsWith('8') ? '7' + d.substring(1) : 
+                     d.startsWith('9') ? '7' + d : d
+      if (number.length > 1) {
+        const a = number.substring(1, 4)
+        parts.push(' ', '(', a)
+        if (a.length === 3) parts.push(')')
+      }
+      if (number.length > 4) {
+        const b = number.substring(4, 7)
+        parts.push(' ', b)
+      }
+      if (number.length > 7) {
+        const c = number.substring(7, 9)
+        parts.push('-', c)
+      }
+      if (number.length > 9) {
+        const e2 = number.substring(9, 11)
+        parts.push('-', e2)
+      }
+    } else {
+      // Для других стран
+      if (d.length > 1) {
+        const a = d.substring(1, 4)
+        parts.push(' ', '(', a)
+        if (a.length === 3) parts.push(')')
+      }
+      if (d.length > 4) {
+        const b = d.substring(4, 7)
+        parts.push(' ', b)
+      }
+      if (d.length > 7) {
+        const c = d.substring(7, 9)
+        parts.push('-', c)
+      }
+      if (d.length > 9) {
+        const e2 = d.substring(9, 11)
+        parts.push('-', e2)
+      }
     }
-    if (d.length > 7) {
-      const c = d.substring(7, 9)
-      parts.push('-', c)
-    }
-    if (d.length > 9) {
-      const e2 = d.substring(9, 11)
-      parts.push('-', e2)
-    }
+    
     return parts.join('')
   }
 

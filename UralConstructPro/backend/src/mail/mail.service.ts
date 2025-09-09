@@ -4,6 +4,7 @@ import * as path from 'path';
 import * as nodemailer from 'nodemailer';
 import { Application, ProductCategory } from '../applications/application.entity';
 import { EmailValidationService } from './email-validation.service';
+import { LoggerService } from '../utils/logger';
 
 @Injectable()
 export class MailService {
@@ -12,6 +13,7 @@ export class MailService {
   constructor(
     private configService: ConfigService,
     private emailValidationService: EmailValidationService,
+    private logger: LoggerService,
   ) {
     const port = this.configService.get<number>('SMTP_PORT', 587);
     this.transporter = nodemailer.createTransport({
@@ -129,9 +131,11 @@ export class MailService {
 
     try {
       await this.transporter.sendMail(mailOptions);
+      this.logger.logEmail(mailOptions.to, mailOptions.subject, true);
       console.log(`✅ Email уведомление отправлено для заявки ${application.id} на ${mailOptions.to}`);
       console.log(`📧 Тема письма: ${mailOptions.subject}`);
     } catch (error) {
+      this.logger.logEmail(mailOptions.to, mailOptions.subject, false, error.message);
       console.error('❌ Ошибка отправки email:', error);
       console.error('📧 Детали ошибки:', {
         to: mailOptions.to,
@@ -199,8 +203,10 @@ export class MailService {
 
     try {
       await this.transporter.sendMail(mailOptions);
+      this.logger.logEmail(application.email, 'УралАнтикор — заявка принята', true);
       console.log(`✅ Подтверждение отправлено клиенту ${application.email}`);
     } catch (error) {
+      this.logger.logEmail(application.email, 'УралАнтикор — заявка принята', false, error.message);
       console.error('❌ Ошибка отправки подтверждения клиенту:', error);
     }
   }
