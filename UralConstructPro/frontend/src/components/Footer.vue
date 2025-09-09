@@ -17,7 +17,7 @@
             Мы создаем качественные решения для промышленности и строительства.
           </p>
           <div class="social-links">
-            <a href="mailto:Mihuil.chugunov@gmail.com" class="social-link">
+            <a href="mailto:mihuil.chugunov@mail.ru" class="social-link">
               <img src="/img/footer/gmail-logo.png" alt="Gmail" class="social-icon" width="28px" height="28px" />
               <span>Email</span>
             </a>
@@ -46,7 +46,7 @@
               <span class="contact-icon">📧</span>
               <div class="contact-details">
                 <span class="contact-label">Email</span>
-                <span class="contact-value">Mihuil.chugunov@gmail.com</span>
+                <span class="contact-value">mihuil.chugunov@mail.ru</span>
               </div>
             </div>
             <div class="contact-item">

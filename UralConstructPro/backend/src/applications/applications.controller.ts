@@ -1,5 +1,6 @@
-import { Controller, Get, Post, Body, Param, Put, HttpCode, HttpStatus, Headers, Req, BadRequestException } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiHeader } from '@nestjs/swagger';
+import { Controller, Get, Post, Body, Param, Put, HttpCode, HttpStatus, Req, BadRequestException } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { ApplicationsService } from './applications.service';
 import { CreateApplicationDto } from './dto/create-application.dto';
 import { Application, ApplicationStatus } from './application.entity';
@@ -15,12 +16,8 @@ export class ApplicationsController {
   ) {}
 
   @Post()
+  @Throttle({ default: { limit: 1, ttl: 60000 } }) // 1 заявка в минуту
   @ApiOperation({ summary: 'Создать новую заявку' })
-  @ApiHeader({ 
-    name: 'X-Recipient-Email', 
-    description: 'Email для отправки заявки (опционально)', 
-    required: false 
-  })
   @ApiResponse({ 
     status: 201, 
     description: 'Заявка успешно создана',
@@ -30,7 +27,6 @@ export class ApplicationsController {
   @ApiResponse({ status: 429, description: 'Слишком много заявок' })
   async create(
     @Body() createApplicationDto: CreateApplicationDto,
-    @Headers('x-recipient-email') recipientEmail: string,
     @Req() request: Request,
   ): Promise<Application> {
     // Валидация email домена
@@ -44,7 +40,7 @@ export class ApplicationsController {
     const rateLimitId = this.emailValidationService.getRateLimitIdentifier(createApplicationDto.email, clientIp);
     this.emailValidationService.checkRateLimit(rateLimitId);
 
-    return this.applicationsService.create(createApplicationDto, recipientEmail);
+    return this.applicationsService.create(createApplicationDto);
   }
 
   @Get()

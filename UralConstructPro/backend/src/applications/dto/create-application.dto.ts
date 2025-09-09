@@ -33,12 +33,10 @@ export class CreateApplicationDto {
   @ApiProperty({ 
     description: 'Категория изделия',
     enum: ProductCategory,
-    required: false,
     example: ProductCategory.BUILDING_FRAMES
   })
-  @IsOptional()
   @IsEnum(ProductCategory)
-  productCategory?: ProductCategory;
+  productCategory: ProductCategory;
 
   @ApiProperty({ 
     description: 'Название изделия',
@@ -52,11 +50,10 @@ export class CreateApplicationDto {
 
   @ApiProperty({ 
     description: 'Описание задачи',
-    required: false,
     example: 'Нужен каркас здания размером 20x30 метров'
   })
-  @IsOptional()
   @IsString()
+  @MinLength(10)
   @MaxLength(2000)
-  description?: string;
+  description: string;
 } 

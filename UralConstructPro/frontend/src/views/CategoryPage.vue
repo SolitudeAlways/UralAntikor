@@ -63,7 +63,7 @@
               <h4>Описание</h4>
               <p>{{ selectedProduct.fullDescription }}</p>
               
-              <h4>Оставить заявку</h4>
+              <h4 class="h4_application">Оставить заявку</h4>
               <!-- Интегрированная форма каталога -->
               <form @submit.prevent="submitProductForm" class="contact-form">
                 <div class="form-grid">
@@ -75,7 +75,6 @@
                       type="text"
                       placeholder="Введите ваше имя"
                       :class="{ error: pErrors.name }"
-                      @blur="pValidateField('name')"
                       @input="onPNameInput"
                     />
                     <span v-if="pErrors.name" class="error-message">{{ pErrors.name }}</span>
@@ -88,7 +87,6 @@
                       type="email"
                       placeholder="your@email.com"
                       :class="{ error: pErrors.email }"
-                      @blur="pValidateField('email')"
                     />
                     <span v-if="pErrors.email" class="error-message">{{ pErrors.email }}</span>
                   </div>
@@ -100,7 +98,6 @@
                       type="tel"
                       placeholder="+7 (999) 123-45-67"
                       :class="{ error: pErrors.phone }"
-                      @blur="pValidateField('phone')"
                       @input="onPPhoneInput"
                     />
                     <span v-if="pErrors.phone" class="error-message">{{ pErrors.phone }}</span>
@@ -114,7 +111,6 @@
                     rows="4"
                     placeholder="Опишите вашу задачу, требования и особенности проекта..."
                     :class="{ error: pErrors.description }"
-                    @blur="pValidateField('description')"
                   ></textarea>
                   <span v-if="pErrors.description" class="error-message">{{ pErrors.description }}</span>
                 </div>
@@ -135,14 +131,14 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import Header from '@/components/Header.vue'
 import Footer from '@/components/Footer.vue'
 import axios from 'axios'
 import { useEmailConfig } from '@/composables/useEmailConfig'
+import { validateForm, applicationValidationRules, sanitizeText, type ValidationErrors } from '@/utils/validation'
 
 const route = useRoute()
-const router = useRouter()
 const { getRecipientEmail } = useEmailConfig()
 
 interface Product {
@@ -262,52 +258,13 @@ const pForm = ref({
   phone: '',
   description: ''
 })
-const pErrors = ref({
+const pErrors = ref<ValidationErrors>({
   name: '',
   email: '',
   phone: '',
   description: ''
 })
 
-const pValidateField = (field: keyof typeof pErrors.value) => {
-  pErrors.value[field] = ''
-  const raw = (pForm.value as any)[field]?.toString() || ''
-  switch (field) {
-    case 'name': {
-      const value = raw.trim()
-      if (!value) pErrors.value.name = 'Пожалуйста, введите ваше имя'
-      else if (!/^[A-Za-zА-Яа-яЁё\s\-]+$/.test(value)) pErrors.value.name = 'Допустимы только буквы русского или английского алфавита'
-      else if (value.length < 2) pErrors.value.name = 'Имя должно содержать минимум 2 символа'
-      break
-    }
-    case 'email': {
-      const value = raw.trim()
-      if (!value) pErrors.value.email = 'Пожалуйста, введите email'
-      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) pErrors.value.email = 'Пожалуйста, введите корректный email'
-      break
-    }
-    case 'phone': {
-      const digits = raw.replace(/\D/g, '')
-      const localDigits = Math.max(digits.length - 1, 0)
-      if (!digits) pErrors.value.phone = 'Пожалуйста, введите телефон'
-      else if (localDigits < 10) pErrors.value.phone = 'Введите 10 цифр номера (после кода страны)'
-      break
-    }
-    case 'description': {
-      if (!raw) pErrors.value.description = 'Пожалуйста, опишите задачу'
-      else if (raw.length < 10) pErrors.value.description = 'Описание должно содержать минимум 10 символов'
-      break
-    }
-  }
-}
-
-const pValidateForm = () => {
-  pValidateField('name')
-  pValidateField('email')
-  pValidateField('phone')
-  pValidateField('description')
-  return !Object.values(pErrors.value).some(Boolean)
-}
 
 const pFormatPhone = (digits: string): string => {
   const d = (digits || '').replace(/\D/g, '')
@@ -348,27 +305,49 @@ const onPNameInput = (e: Event) => {
 }
 
 const submitProductForm = async () => {
-  if (!pValidateForm()) return
+  // Очищаем предыдущие ошибки
+  Object.keys(pErrors.value).forEach(key => {
+    pErrors.value[key] = ''
+  })
+  
+  // Санитизируем данные
+  const sanitizedForm = {
+    name: sanitizeText(pForm.value.name),
+    email: pForm.value.email.trim(),
+    phone: pForm.value.phone,
+    description: sanitizeText(pForm.value.description)
+  }
+  
+  // Валидируем форму
+  const validationErrors = validateForm(sanitizedForm, applicationValidationRules)
+  
+  if (Object.keys(validationErrors).length > 0) {
+    Object.assign(pErrors.value, validationErrors)
+    return
+  }
+  
   try {
     pLoading.value = true
     const payload = {
-      name: pForm.value.name,
-      email: pForm.value.email,
-      phone: pForm.value.phone,
-      description: pForm.value.description,
+      name: sanitizedForm.name,
+      email: sanitizedForm.email,
+      phone: sanitizedForm.phone,
+      description: sanitizedForm.description,
       productCategory: route.params.category,
       productTitle: selectedProduct.value?.title
     }
-    await axios.post('http://localhost:3002/applications', payload, {
+    const resp = await axios.post('http://localhost:3000/applications', payload, {
       headers: {
         'X-Recipient-Email': getRecipientEmail()
       }
     })
-    alert('Заявка отправлена!')
+    if (resp.status === 201) {
+      showToast('Заявка отправлена. Мы свяжемся с вами в ближайшее время.', 'success')
+    }
     pForm.value = { name: '', email: '', phone: '', description: '' }
     closeProductDetails()
   } catch (e: any) {
-    alert(e.response?.data?.message || 'Ошибка отправки заявки')
+    showToast(e.response?.data?.message || 'Ошибка отправки заявки', 'error')
   } finally {
     pLoading.value = false
   }
@@ -605,11 +584,19 @@ const submitProductForm = async () => {
   font-weight: var(--font-weight-semibold);
   color: var(--gray-800);
   margin-bottom: 0.5rem;
-  margin-top: 1.5rem;
+  margin-top: 3.5rem;
+  text-align: center;
 }
 
 .product-info-details h4:first-child {
   margin-top: 0;
+}
+
+.h4_application {
+  border: 0;
+  border-top: 3px solid var(--primary-color);
+  padding: 2rem 1rem 0 1rem;
+  background: transparent;
 }
 
 .product-info-details p {
@@ -681,3 +668,53 @@ const submitProductForm = async () => {
   }
 }
 </style>
+
+<script lang="ts">
+import { defineComponent } from 'vue'
+
+let toastEl: HTMLDivElement | null = null
+let toastTimer: number | null = null
+
+export function showToast(message: string, type: 'success' | 'error' = 'success') {
+  if (!toastEl) {
+    toastEl = document.createElement('div')
+    toastEl.style.position = 'fixed'
+    toastEl.style.top = '20px'
+    toastEl.style.right = '20px'
+    toastEl.style.zIndex = '9999'
+    toastEl.style.background = 'white'
+    toastEl.style.border = '1px solid #e5e7eb'
+    toastEl.style.borderRadius = '12px'
+    toastEl.style.boxShadow = '0 10px 25px rgba(0,0,0,0.12)'
+    toastEl.style.padding = '12px 16px'
+    toastEl.style.color = '#1f2937'
+    toastEl.style.transition = 'opacity 0.25s ease, transform 0.25s ease'
+    toastEl.style.opacity = '0'
+    toastEl.style.transform = 'translateY(-8px)'
+    document.body.appendChild(toastEl)
+  }
+  toastEl.textContent = message
+  toastEl.style.borderColor = type === 'success' ? '#16a34a' : '#ef4444'
+
+  toastEl.style.display = 'block'
+  // animate in
+  requestAnimationFrame(() => {
+    if (toastEl) {
+      toastEl.style.opacity = '1'
+      toastEl.style.transform = 'translateY(0)'
+    }
+  })
+  if (toastTimer) window.clearTimeout(toastTimer)
+  toastTimer = window.setTimeout(() => {
+    if (toastEl) {
+      toastEl.style.opacity = '0'
+      toastEl.style.transform = 'translateY(-8px)'
+      window.setTimeout(() => {
+        if (toastEl) toastEl.style.display = 'none'
+      }, 250)
+    }
+  }, 3000)
+}
+
+export default defineComponent({})
+</script>

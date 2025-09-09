@@ -1,6 +1,6 @@
 $headers = @{
     "Content-Type" = "application/json"
-    "X-Recipient-Email" = "Mihuil.chugunov@gmail.com"
+    "X-Recipient-Email" = "mihuil.chugunov@mail.ru"
 }
 
 $body = '{

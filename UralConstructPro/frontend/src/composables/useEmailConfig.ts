@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 
 // Email адрес для отправки заявок (можно изменить в header)
-const recipientEmail = ref('Mihuil.chugunov@gmail.com')
+const recipientEmail = ref('mihuil.chugunov@mail.ru')
 
 export function useEmailConfig() {
   const setRecipientEmail = (email: string) => {

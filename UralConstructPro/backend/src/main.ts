@@ -6,10 +6,20 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
-  // Настройка CORS
+  // Настройка CORS (упрощенная для разработки)
   app.enableCors({
-    origin: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002'],
+    origin: true, // Разрешаем все origin в разработке
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: [
+      'Origin',
+      'X-Requested-With',
+      'Content-Type',
+      'Accept',
+      'Authorization',
+      'X-Recipient-Email'
+    ],
+    exposedHeaders: ['X-Total-Count'],
   });
 
   // Глобальная валидация
@@ -18,6 +28,9 @@ async function bootstrap() {
     forbidNonWhitelisted: true,
     transform: true,
   }));
+
+  // Глобальный rate limiting (убираем, так как он уже настроен в модуле)
+  // app.useGlobalGuards(new ThrottlerGuard());
 
   // Swagger документация
   const config = new DocumentBuilder()

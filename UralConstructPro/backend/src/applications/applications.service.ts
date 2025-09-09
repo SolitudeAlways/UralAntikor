@@ -14,13 +14,13 @@ export class ApplicationsService {
     private mailService: MailService,
   ) {}
 
-  async create(createApplicationDto: CreateApplicationDto, recipientEmail?: string): Promise<Application> {
+  async create(createApplicationDto: CreateApplicationDto): Promise<Application> {
     const application = this.applicationsRepository.create(createApplicationDto);
     const savedApplication = await this.applicationsRepository.save(application);
 
     // Отправляем email уведомления
     await Promise.all([
-      this.mailService.sendApplicationNotification(savedApplication, recipientEmail),
+      this.mailService.sendApplicationNotification(savedApplication),
       this.mailService.sendClientConfirmation(savedApplication),
     ]);
 

@@ -43,7 +43,6 @@
                   type="text"
                   placeholder="Введите ваше имя"
                   :class="{ 'error': errors.name }"
-                  @blur="validateField('name')"
                   @input="onNameInput"
                 />
                 <span v-if="errors.name" class="error-message">{{ errors.name }}</span>
@@ -57,7 +56,6 @@
                   type="email"
                   placeholder="your@email.com"
                   :class="{ 'error': errors.email }"
-                  @blur="validateField('email')"
                 />
                 <span v-if="errors.email" class="error-message">{{ errors.email }}</span>
               </div>
@@ -70,7 +68,6 @@
                   type="tel"
                   placeholder="+7 (999) 123-45-67"
                   :class="{ 'error': errors.phone }"
-                  @blur="validateField('phone')"
                   @input="onPhoneInput"
                 />
                 <span v-if="errors.phone" class="error-message">{{ errors.phone }}</span>
@@ -103,7 +100,6 @@
                   v-model="form.product"
                   :disabled="!form.productCategory"
                   :class="{ 'error': errors.product }"
-                  @change="validateField('product')"
                 >
                   <option value="">Сначала выберите категорию</option>
                   <option v-for="p in productOptions" :key="p" :value="p">{{ p }}</option>
@@ -120,7 +116,6 @@
                 rows="4"
                 placeholder="Опишите вашу задачу, требования и особенности проекта..."
                 :class="{ 'error': errors.description }"
-                @blur="validateField('description')"
               ></textarea>
               <span v-if="errors.description" class="error-message">{{ errors.description }}</span>
             </div>
@@ -165,20 +160,12 @@
       </div>
     </div>
     
-    <!-- Диалог успешной отправки -->
-    <div v-if="showSuccessDialog" class="modal-overlay" @click="showSuccessDialog = false">
-      <div class="modal-content" @click.stop>
-        <div class="success-content">
-          <div class="success-icon">✅</div>
-          <h3>Заявка отправлена!</h3>
-          <p>Спасибо! Ваша заявка успешно отправлена.</p>
-          <p>Мы свяжемся с вами в ближайшее время.</p>
-          <button @click="showSuccessDialog = false" class="close-btn">
-            Закрыть
-          </button>
-        </div>
+    <!-- Тост-уведомление -->
+    <transition name="toast-fade">
+      <div v-show="toastVisible" class="toast" :class="toastType">
+        {{ toastMessage }}
       </div>
-    </div>
+    </transition>
   </section>
 </template>
 
@@ -186,11 +173,14 @@
 import { ref, reactive, onMounted, computed } from 'vue'
 import axios from 'axios'
 import { useRouter, useRoute } from 'vue-router'
+import { validateForm, applicationValidationRules, sanitizeText, type ValidationErrors } from '@/utils/validation'
 
 const router = useRouter()
 const route = useRoute()
 const loading = ref(false)
-const showSuccessDialog = ref(false)
+const toastVisible = ref(false)
+const toastMessage = ref('')
+const toastType = ref<'success' | 'error'>('success')
 const selectedCategory = ref('')
 
 const form = reactive({
@@ -202,14 +192,7 @@ const form = reactive({
   description: ''
 })
 
-const errors = reactive<{
-  name: string
-  email: string
-  phone: string
-  productCategory: string
-  product: string
-  description: string
-}>({
+const errors = reactive<ValidationErrors>({
   name: '',
   email: '',
   phone: '',
@@ -263,64 +246,6 @@ const categories = [
   }
 ]
 
-const validateField = (field: keyof typeof errors) => {
-  errors[field] = ''
-  
-  switch (field) {
-    case 'name': {
-      const value = (form.name || '').trim()
-      if (!value) {
-        errors.name = 'Пожалуйста, введите ваше имя'
-      } else if (!/^[A-Za-zА-Яа-яЁё\s\-]+$/.test(value)) {
-        errors.name = 'Допустимы только буквы русского или английского алфавита'
-      } else if (value.length < 2) {
-        errors.name = 'Имя должно содержать минимум 2 символа'
-      }
-      break
-    }
-    case 'email': {
-      const value = (form.email || '').trim()
-      if (!value) {
-        errors.email = 'Пожалуйста, введите email'
-      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-        errors.email = 'Пожалуйста, введите корректный email'
-      }
-      break
-    }
-    case 'phone': {
-      const digits = (form.phone || '').replace(/\D/g, '')
-      const localDigits = Math.max(digits.length - 1, 0)
-      if (!digits) {
-        errors.phone = 'Пожалуйста, введите телефон'
-      } else if (localDigits < 10) {
-        errors.phone = 'Введите 10 цифр номера (после кода страны)'
-      }
-      break
-    }
-    case 'productCategory':
-      if (!form.productCategory) {
-        errors.productCategory = 'Пожалуйста, выберите категорию'
-      }
-      // если категория поменялась, очистим изделие
-      if (!form.productCategory) {
-        form.product = ''
-        errors.product = ''
-      }
-      break
-    case 'product':
-      if (form.productCategory && !form.product) {
-        errors.product = 'Пожалуйста, выберите изделие'
-      }
-      break
-    case 'description':
-      if (!form.description) {
-        errors.description = 'Пожалуйста, опишите задачу'
-      } else if (form.description.length < 10) {
-        errors.description = 'Описание должно содержать минимум 10 символов'
-      }
-      break
-  }
-}
 
 // Карта изделий по категориям (для селекта)
 const categoryIdToProductsMap: Record<string, string[]> = {
@@ -337,9 +262,8 @@ const productOptions = computed(() => {
 })
 
 const onCategoryChange = () => {
-  // при смене категории очищаем изделие и валидируем
+  // при смене категории очищаем изделие
   form.product = ''
-  validateField('productCategory')
 }
 
 // Маска телефона: отображаем "+X (XXX) XXX-XX-XX", в модели храним только цифры
@@ -389,16 +313,6 @@ const onNameInput = (e: Event) => {
   form.name = filtered
 }
 
-const validateForm = () => {
-  validateField('name')
-  validateField('email')
-  validateField('phone')
-  validateField('productCategory')
-  validateField('product')
-  validateField('description')
-  
-  return !Object.values(errors).some(error => error)
-}
 
 const selectCategory = (categoryId: string) => {
   selectedCategory.value = categoryId
@@ -412,7 +326,6 @@ onMounted(() => {
     const categoryId = route.query.category as string
     selectedCategory.value = categoryId
     form.productCategory = categoryId
-    validateField('productCategory')
   }
   
   if (route.query.product) {
@@ -422,22 +335,49 @@ onMounted(() => {
     if (opts.includes(productIdOrName)) {
       form.product = productIdOrName
     }
-    validateField('product')
   }
 })
 
 const submitForm = async () => {
-  if (!validateForm()) return
+  // Очищаем предыдущие ошибки
+  Object.keys(errors).forEach(key => {
+    errors[key] = ''
+  })
+  
+  // Санитизируем данные
+  const sanitizedForm = {
+    name: sanitizeText(form.name),
+    email: form.email.trim(),
+    phone: form.phone,
+    productCategory: form.productCategory,
+    productTitle: sanitizeText(form.product),
+    description: sanitizeText(form.description)
+  }
+  
+  // Валидируем форму
+  const validationErrors = validateForm(sanitizedForm, applicationValidationRules)
+  
+  if (Object.keys(validationErrors).length > 0) {
+    Object.assign(errors, validationErrors)
+    return
+  }
   
   try {
     loading.value = true
     
-    const response = await axios.post('http://localhost:3000/api/applications', {
-      ...form
+    const response = await axios.post('http://localhost:3000/applications', {
+      ...sanitizedForm
+    }, {
+      headers: {
+        // backend теперь игнорирует этот заголовок
+      }
     })
     
     if (response.status === 201) {
-      showSuccessDialog.value = true
+      toastType.value = 'success'
+      toastMessage.value = 'Заявка отправлена. Мы свяжемся с вами в ближайшее время.'
+      toastVisible.value = true
+      setTimeout(() => { toastVisible.value = false }, 3000)
       // Сброс формы
       form.name = ''
       form.email = ''
@@ -454,7 +394,10 @@ const submitForm = async () => {
     }
   } catch (error: any) {
     console.error('Ошибка отправки заявки:', error)
-    alert(error.response?.data?.message || 'Ошибка отправки заявки')
+    toastType.value = 'error'
+    toastMessage.value = error.response?.data?.message || 'Ошибка отправки заявки'
+    toastVisible.value = true
+    setTimeout(() => { toastVisible.value = false }, 3500)
   } finally {
     loading.value = false
   }
@@ -767,64 +710,31 @@ const submitForm = async () => {
   left: 100%;
 }
 
-/* Модальное окно */
-.modal-overlay {
+/* Тост-уведомление */
+.toast {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(5px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: var(--z-modal);
-}
-
-.modal-content {
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
   background: var(--white);
-  border-radius: var(--radius-xl);
-  padding: 3rem;
-  max-width: 500px;
-  width: 90%;
-  box-shadow: var(--shadow-2xl);
-  text-align: center;
-}
-
-.success-content h3 {
   color: var(--gray-800);
-  font-size: var(--font-size-2xl);
-  font-weight: var(--font-weight-bold);
-  margin-bottom: 1rem;
-}
-
-.success-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-}
-
-.success-content p {
-  color: var(--gray-600);
-  margin-bottom: 0.5rem;
-  line-height: var(--line-height-relaxed);
-}
-
-.close-btn {
-  background: var(--gradient-primary);
-  border: none;
-  padding: 0.75rem 2rem;
-  color: white;
+  border: 1px solid var(--gray-200);
   border-radius: var(--radius-lg);
-  font-weight: var(--font-weight-medium);
-  margin-top: 1.5rem;
-  cursor: pointer;
-  transition: var(--transition-normal);
+  box-shadow: var(--shadow-2xl);
+  padding: 0.75rem 1rem;
 }
+.toast.success { border-color: #16a34a; }
+.toast.error { border-color: #ef4444; }
 
-.close-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
+/* Плавное появление/исчезновение */
+.toast-fade-enter-active,
+.toast-fade-leave-active {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.toast-fade-enter-from,
+.toast-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
 }
 
 /* Фичи каталога */

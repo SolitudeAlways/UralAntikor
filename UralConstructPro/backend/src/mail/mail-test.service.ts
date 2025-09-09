@@ -3,12 +3,13 @@ import { Application } from '../applications/application.entity';
 
 @Injectable()
 export class MailTestService {
-  async sendApplicationNotification(application: Application, recipientEmail?: string): Promise<void> {
-    const email = recipientEmail || 'admin@uralconstruct.ru';
+  async sendApplicationNotification(application: Application): Promise<void> {
+    const email = 'admin@uralconstruct.ru';
     
     console.log('\n📧 ===== EMAIL УВЕДОМЛЕНИЕ =====');
     console.log(`📬 Получатель: ${email}`);
     console.log(`👤 От: ${application.name} (${application.email})`);
+    console.log(`↪️ Reply-To будет: ${application.email}`);
     console.log(`📱 Телефон: ${application.phone}`);
     console.log(`🏗️ Категория: ${application.productCategory || 'Не указано'}`);
     console.log(`🔧 Изделие: ${application.productTitle || 'Не указано'}`);
