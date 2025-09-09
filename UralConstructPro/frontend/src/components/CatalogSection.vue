@@ -516,7 +516,7 @@ const submitForm = async () => {
 .catalog-categories {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.44rem;
   height: 100%;
 }
 
@@ -609,6 +609,7 @@ const submitForm = async () => {
   height: 100%; /* растягиваем форму на высоту колонки */
   display: flex;
   flex-direction: column;
+  min-height: 0; /* позволяет flex-элементу сжиматься */
 }
 
 .catalog-form::before {
@@ -654,7 +655,6 @@ const submitForm = async () => {
 .contact-form {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
   width: 100%;
   flex: 1; /* форма занимает доступную высоту внутри карточки */
 }
@@ -662,7 +662,6 @@ const submitForm = async () => {
 .form-grid {
   display: grid;
   grid-template-columns: 1fr; /* одна колонка: поля друг под другом */
-  gap: 1rem;
   width: 100%;
 }
 
@@ -726,7 +725,6 @@ const submitForm = async () => {
 
 .form-actions {
   text-align: center;
-  margin-top: 2rem;
 }
 
 .submit-btn {
@@ -911,7 +909,6 @@ const submitForm = async () => {
   
   .form-grid {
     grid-template-columns: 1fr;
-    gap: 1rem;
   }
   
   .form-header h3 {

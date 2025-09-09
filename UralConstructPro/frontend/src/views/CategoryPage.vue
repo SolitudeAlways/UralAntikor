@@ -134,19 +134,31 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Header from '@/components/Header.vue'
 import Footer from '@/components/Footer.vue'
 import axios from 'axios'
+import { useEmailConfig } from '@/composables/useEmailConfig'
 
 const route = useRoute()
 const router = useRouter()
+const { getRecipientEmail } = useEmailConfig()
 
-const selectedProduct = ref(null)
+interface Product {
+  id: string;
+  title: string;
+  description: string;
+  image: string;
+  fullDescription: string;
+  specifications: any[];
+  application: string;
+}
+
+const selectedProduct = ref<Product | null>(null)
 
 // Данные категорий с изделиями
-const categoriesData = {
+const categoriesData: Record<string, { title: string; description: string; products: Product[] }> = {
   building_frames: {
     title: 'Каркасы зданий',
     description: 'Фермы, каркасы ангаров, марши, опоры и перекрытия',
@@ -241,16 +253,6 @@ const closeProductDetails = () => {
   selectedProduct.value = null
 }
 
-const requestQuote = (product: any) => {
-  closeProductDetails()
-  router.push({
-    path: '/#catalog',
-    query: { 
-      category: route.params.category,
-      product: product.id
-    }
-  })
-}
 
 // Форма заявки (интегрированная)
 const pLoading = ref(false)
@@ -357,12 +359,16 @@ const submitProductForm = async () => {
       productCategory: route.params.category,
       productTitle: selectedProduct.value?.title
     }
-    await axios.post('http://localhost:3000/api/applications', payload)
+    await axios.post('http://localhost:3002/applications', payload, {
+      headers: {
+        'X-Recipient-Email': getRecipientEmail()
+      }
+    })
     alert('Заявка отправлена!')
     pForm.value = { name: '', email: '', phone: '', description: '' }
     closeProductDetails()
-  } catch (e) {
-    alert('Ошибка отправки заявки')
+  } catch (e: any) {
+    alert(e.response?.data?.message || 'Ошибка отправки заявки')
   } finally {
     pLoading.value = false
   }
@@ -390,7 +396,7 @@ const submitProductForm = async () => {
 /* Заголовок категории */
 .category-header {
   background: var(--white);
-  padding: 3rem 0;
+  padding: 1.5rem 0;
   border-bottom: 1px solid var(--gray-100);
   margin-top: 80px; /* Отступ для фиксированного header */
 }
@@ -444,7 +450,7 @@ const submitProductForm = async () => {
 
 /* Секция изделий */
 .products-section {
-  padding: 4rem 0;
+  padding: 2rem 0;
 }
 
 .products-grid {

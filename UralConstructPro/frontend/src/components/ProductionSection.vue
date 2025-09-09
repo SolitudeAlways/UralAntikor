@@ -14,13 +14,13 @@
           :key="index"
           class="production-item"
           :class="`item-${index + 1}`"
+          @click="openModal(index)"
         >
           <div class="production-image">
             <img :src="item.image" :alt="item.title" class="production-img" />
             <div class="overlay">
               <div class="overlay-content">
-                <div class="overlay-icon">📸</div>
-                <div class="overlay-text">Нажмите для просмотра</div>
+                <div class="zoom-icon">🔍</div>
               </div>
             </div>
           </div>
@@ -46,10 +46,41 @@
         </div>
       </div>
     </div>
+    
+    <!-- Модальное окно для увеличенного изображения -->
+    <el-dialog 
+      v-model="showModal" 
+      :title="currentItem?.title"
+      width="700px"
+      center
+      class="production-modal"
+    >
+      <div class="modal-content">
+        <div class="modal-image">
+          <img :src="currentItem?.image" :alt="currentItem?.title" class="modal-img" />
+        </div>
+      </div>
+      <template #footer>
+        <div class="modal-footer">
+          <el-button @click="prevItem" :disabled="currentIndex === 0">
+            ← Предыдущий
+          </el-button>
+          <span class="image-counter">{{ currentIndex + 1 }} из {{ productionItems.length }}</span>
+          <el-button @click="nextItem" :disabled="currentIndex === productionItems.length - 1">
+            Следующий →
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
   </section>
 </template>
 
 <script setup lang="ts">
+import { ref, computed } from 'vue'
+
+const showModal = ref(false)
+const currentIndex = ref(0)
+
 const productionItems = [
   {
     icon: '🏭',
@@ -88,6 +119,25 @@ const productionItems = [
     image: '/img/production/compressor.jpeg'
   }
 ]
+
+const currentItem = computed(() => productionItems[currentIndex.value])
+
+const openModal = (index: number) => {
+  currentIndex.value = index
+  showModal.value = true
+}
+
+const nextItem = () => {
+  if (currentIndex.value < productionItems.length - 1) {
+    currentIndex.value++
+  }
+}
+
+const prevItem = () => {
+  if (currentIndex.value > 0) {
+    currentIndex.value--
+  }
+}
 </script>
 
 <style scoped>
@@ -225,19 +275,14 @@ const productionItems = [
 
 .overlay-content {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  justify-content: center;
   color: white;
 }
 
-.overlay-icon {
-  font-size: 2.5rem;
-}
-
-.overlay-text {
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-medium);
+.zoom-icon {
+  font-size: 2rem;
+  color: white;
 }
 
 .production-info {
@@ -347,6 +392,11 @@ const productionItems = [
   .production-grid {
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   }
+  
+  /* Адаптивность для модального окна на планшетах */
+  .modal-content {
+    height: 400px;
+  }
 }
 
 @media (max-width: 768px) {
@@ -395,5 +445,60 @@ const productionItems = [
   .stat-number {
     font-size: var(--font-size-3xl);
   }
+  
+  /* Адаптивность для модального окна */
+  .modal-content {
+    height: 300px;
+  }
+  
+  .modal-image {
+    max-width: 100%;
+  }
+}
+
+/* Модальное окно */
+.production-modal {
+  border-radius: var(--radius-xl);
+}
+
+.modal-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 500px; /* фиксированная высота */
+  width: 100%;
+}
+
+.modal-image {
+  width: 100%;
+  height: 100%;
+  max-width: 600px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: var(--gray-50);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--gray-200);
+}
+
+.modal-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* сохраняет пропорции, помещает изображение целиком */
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-2xl);
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.image-counter {
+  font-size: var(--font-size-base);
+  color: var(--gray-600);
+  font-weight: var(--font-weight-medium);
 }
 </style> 

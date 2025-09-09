@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Application, ApplicationStatus } from './application.entity';
@@ -10,16 +10,17 @@ export class ApplicationsService {
   constructor(
     @InjectRepository(Application)
     private applicationsRepository: Repository<Application>,
+    @Inject('MailService')
     private mailService: MailService,
   ) {}
 
-  async create(createApplicationDto: CreateApplicationDto): Promise<Application> {
+  async create(createApplicationDto: CreateApplicationDto, recipientEmail?: string): Promise<Application> {
     const application = this.applicationsRepository.create(createApplicationDto);
     const savedApplication = await this.applicationsRepository.save(application);
 
     // Отправляем email уведомления
     await Promise.all([
-      this.mailService.sendApplicationNotification(savedApplication),
+      this.mailService.sendApplicationNotification(savedApplication, recipientEmail),
       this.mailService.sendClientConfirmation(savedApplication),
     ]);
 

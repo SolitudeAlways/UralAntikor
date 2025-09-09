@@ -41,6 +41,16 @@ export class CreateApplicationDto {
   productCategory?: ProductCategory;
 
   @ApiProperty({ 
+    description: 'Название изделия',
+    required: false,
+    example: 'Металлические фермы'
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  productTitle?: string;
+
+  @ApiProperty({ 
     description: 'Описание задачи',
     required: false,
     example: 'Нужен каркас здания размером 20x30 метров'

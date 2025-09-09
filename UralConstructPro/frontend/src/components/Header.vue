@@ -3,7 +3,9 @@
     <div class="container">
       <div class="header-content">
         <div class="brand">
-          <img src="/img/header/logo3 (1).png" alt="Логотип" class="logo-img" />
+          <router-link to="/" class="logo-link">
+            <img src="/img/header/logo3 (1).png" alt="Логотип" class="logo-img" />
+          </router-link>
         </div>
 
         <nav class="nav">
@@ -18,7 +20,7 @@
 
         <div class="header-contacts">
           <a href="tel:+79991234567" class="contact-link">+7 (999) 123-45-67</a>
-          <a href="mailto:info@example.com" class="contact-link">info@example.com</a>
+          <a href="mailto:info@example.com" class="contact-link">{{ recipientEmail }}</a>
         </div>
 
         <!-- Кнопка бургер (справа) -->
@@ -56,9 +58,11 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useEmailConfig } from '@/composables/useEmailConfig'
 
 const isMenuOpen = ref(false)
 const isMobile = ref(false)
+const { recipientEmail } = useEmailConfig()
 
 const toggleMenu = () => { if (isMobile.value) isMenuOpen.value = !isMenuOpen.value }
 const closeMenu = () => { isMenuOpen.value = false }
@@ -91,6 +95,8 @@ defineEmits<{
 .container { max-width: var(--container-max-width); margin: 0 auto; padding: 0 2rem; }
 .header-content { display: flex; align-items: center; justify-content: flex-start; height: var(--header-height); }
 .brand { display: flex; align-items: center; }
+.logo-link { display: block; text-decoration: none; transition: var(--transition-normal); }
+.logo-link:hover { transform: scale(1.05); }
 .logo-img { max-height: calc(var(--header-height) - 40px); height: auto; width: auto; max-width: 140px; object-fit: contain; display: block; }
 .nav { flex: 1; display: flex; justify-content: center; }
 .nav-list { display: flex; align-items: center; gap: 1.5rem; list-style: none; margin: 0; padding: 0; }

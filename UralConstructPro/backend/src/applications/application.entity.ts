@@ -11,16 +11,10 @@ export enum ApplicationStatus {
 export enum ProductCategory {
   BUILDING_FRAMES = 'building_frames',
   COLUMNS_BEAMS = 'columns_beams',
-  CANOPIES_COVERS = 'canopies_covers',
-  STAIRS_RAILINGS = 'stairs_railings',
-  MACHINE_FRAMES = 'machine_frames',
-  LIFTING_DEVICES = 'lifting_devices',
-  PLATFORMS = 'platforms',
-  PROTECTIVE_COVERS = 'protective_covers',
-  FACADE_STRUCTURES = 'facade_structures',
-  DOMES_ARCHES = 'domes_arches',
-  PANORAMIC_GLAZING = 'panoramic_glazing',
-  URBAN_ELEMENTS = 'urban_elements',
+  PIPES = 'pipes',
+  PILES = 'piles',
+  ELBOWS = 'elbows',
+  OTHERS = 'others',
 }
 
 @Entity('applications')
@@ -47,6 +41,14 @@ export class Application {
     nullable: true 
   })
   productCategory: ProductCategory;
+
+  @ApiProperty({ description: 'Название изделия' })
+  @Column({ 
+    type: 'varchar', 
+    length: 200,
+    nullable: true 
+  })
+  productTitle: string;
 
   @ApiProperty({ description: 'Описание задачи' })
   @Column({ type: 'text', nullable: true })

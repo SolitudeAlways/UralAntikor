@@ -33,7 +33,7 @@
     <el-dialog 
       v-model="showModal" 
       :title="currentLicense?.title"
-      width="80%"
+      width="700px"
       center
       class="license-modal"
     >
@@ -257,23 +257,28 @@ const prevLicense = () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 400px;
+  height: 500px; /* фиксированная высота */
+  width: 100%;
 }
 
 .modal-image {
   width: 100%;
+  height: 100%;
   max-width: 600px;
   display: flex;
   justify-content: center;
   align-items: center;
+  background: var(--gray-50);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--gray-200);
 }
 
 .modal-img {
-  max-width: 100%;
-  max-height: 500px;
-  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* сохраняет пропорции, помещает изображение целиком */
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-2xl);
 }
 
 .placeholder-large {
@@ -317,6 +322,13 @@ const prevLicense = () => {
 }
 
 /* Адаптивность */
+@media (max-width: 1024px) {
+  /* Адаптивность для модального окна на планшетах */
+  .modal-content {
+    height: 400px;
+  }
+}
+
 @media (max-width: 768px) {
   .container {
     padding: 0 1rem;
@@ -370,6 +382,15 @@ const prevLicense = () => {
   
   .placeholder-text-large {
     font-size: var(--font-size-xl);
+  }
+  
+  /* Адаптивность для модального окна */
+  .modal-content {
+    height: 300px;
+  }
+  
+  .modal-image {
+    max-width: 100%;
   }
 }
 </style> 

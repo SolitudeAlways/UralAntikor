@@ -3,7 +3,7 @@
     <div class="container">
       <!-- Слоган по центру -->
       <div class="footer-slogan">
-        <h2 class="slogan-title">УралХардСтил</h2>
+        <h2 class="slogan-title">УралАнтикор</h2>
         <p class="slogan-text">
           Надежные металлоконструкции для вашего успеха
         </p>
@@ -13,13 +13,22 @@
         <div class="footer-section">
           <h3 class="footer-title">О компании</h3>
           <p class="footer-description">
-            УралХардСтил - ведущее предприятие по производству металлоконструкций на Урале. 
+            УралАнтикор - ведущее предприятие по производству металлоконструкций на Урале. 
             Мы создаем качественные решения для промышленности и строительства.
           </p>
           <div class="social-links">
-            <a href="#" class="social-link">📧 Email</a>
-            <a href="#" class="social-link">📱 WhatsApp</a>
-            <a href="#" class="social-link">💬 Telegram</a>
+            <a href="mailto:Mihuil.chugunov@gmail.com" class="social-link">
+              <img src="/img/footer/gmail-logo.png" alt="Gmail" class="social-icon" width="28px" height="28px" />
+              <span>Email</span>
+            </a>
+            <a href="https://wa.me/79991234567" class="social-link">
+              <img src="/img/footer/whatsapp-logo.png" alt="WhatsApp" class="social-icon" width="46px" height="46px" />
+              <span>WhatsApp</span>
+            </a>
+            <a href="https://t.me/uralantikor" class="social-link">
+              <img src="/img/footer/telegram-logo.png" alt="Telegram" class="social-icon" width="44px" height="44px" />
+              <span>Telegram</span>
+            </a>
           </div>
         </div>
         
@@ -37,29 +46,17 @@
               <span class="contact-icon">📧</span>
               <div class="contact-details">
                 <span class="contact-label">Email</span>
-                <span class="contact-value">info@uralhardsteel.ru</span>
+                <span class="contact-value">Mihuil.chugunov@gmail.com</span>
               </div>
             </div>
             <div class="contact-item">
               <span class="contact-icon">📍</span>
               <div class="contact-details">
                 <span class="contact-label">Адрес</span>
-                <span class="contact-value">г. Екатеринбург, ул. Промышленная, 15</span>
+                <span class="contact-value">г. Челябинск, ул. Антикор, 15</span>
               </div>
             </div>
           </div>
-        </div>
-        
-        <div class="footer-section">
-          <h3 class="footer-title">Услуги</h3>
-          <ul class="services-list">
-            <li>Каркасы зданий</li>
-            <li>Фасадные системы</li>
-            <li>Промышленные конструкции</li>
-            <li>Металлоконструкции</li>
-            <li>Проектирование</li>
-            <li>Монтаж и установка</li>
-          </ul>
         </div>
         
         <div class="footer-section">
@@ -87,13 +84,8 @@
       </div>
       
       <div class="footer-bottom">
-        <div class="footer-links">
-          <a href="#" class="footer-link">Политика конфиденциальности</a>
-          <a href="#" class="footer-link">Условия использования</a>
-          <a href="#" class="footer-link">Карта сайта</a>
-        </div>
         <div class="copyright">
-          © 2024 УралХардСтил. Все права защищены.
+          © 2024 УралАнтикор. Все права защищены.
         </div>
       </div>
     </div>
@@ -156,7 +148,7 @@
   font-size: var(--font-size-4xl);
   font-weight: var(--font-weight-bold);
   margin-bottom: 1rem;
-  background: var(--gradient-hero);
+  background: linear-gradient(135deg, #1e2768 0%, #f09b40 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -184,7 +176,7 @@
 
 .footer-content {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr;
+  grid-template-columns: 2fr 1fr 1fr;
   gap: 3rem;
   margin-bottom: 3rem;
 }
@@ -224,6 +216,9 @@
   border-radius: var(--radius-lg);
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: var(--backdrop-blur);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .social-link:hover {
@@ -232,6 +227,18 @@
   background: rgba(37, 99, 235, 0.2);
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
+}
+
+.social-icon {
+  object-fit: contain;
+  opacity: 0.8;
+  transition: var(--transition-normal);
+  flex-shrink: 0;
+}
+
+.social-link:hover .social-icon {
+  opacity: 1;
+  transform: scale(1.1);
 }
 
 .contact-info {
@@ -287,44 +294,6 @@
   font-weight: var(--font-weight-semibold);
 }
 
-.services-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.services-list li {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: var(--font-size-sm);
-  transition: var(--transition-normal);
-  cursor: pointer;
-  padding: 0.75rem 1rem;
-  border-radius: var(--radius-md);
-  border: 1px solid transparent;
-  position: relative;
-}
-
-.services-list li::before {
-  content: '→';
-  position: absolute;
-  left: 0;
-  opacity: 0;
-  transition: var(--transition-normal);
-}
-
-.services-list li:hover {
-  color: var(--white);
-  background: rgba(255, 255, 255, 0.1);
-  border-color: var(--primary-color);
-  transform: translateX(8px);
-}
-
-.services-list li:hover::before {
-  opacity: 1;
-}
 
 .working-hours {
   display: flex;
@@ -378,10 +347,8 @@
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   padding-top: 2rem;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
   position: relative;
 }
 
@@ -397,26 +364,6 @@
   border-radius: var(--radius-full);
 }
 
-.footer-links {
-  display: flex;
-  gap: 2rem;
-}
-
-.footer-link {
-  color: rgba(255, 255, 255, 0.7);
-  text-decoration: none;
-  font-size: var(--font-size-sm);
-  transition: var(--transition-normal);
-  padding: 0.5rem 1rem;
-  border-radius: var(--radius-md);
-  border: 1px solid transparent;
-}
-
-.footer-link:hover {
-  color: var(--white);
-  background: rgba(255, 255, 255, 0.1);
-  border-color: var(--primary-color);
-}
 
 .copyright {
   color: rgba(255, 255, 255, 0.6);
@@ -455,12 +402,7 @@
   }
   
   .footer-bottom {
-    flex-direction: column;
     text-align: center;
-  }
-  
-  .footer-links {
-    justify-content: center;
   }
   
   .social-links {
