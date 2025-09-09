@@ -170,92 +170,28 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed } from 'vue'
-import axios from 'axios'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { validateForm, applicationValidationRules, sanitizeText, type ValidationErrors } from '@/utils/validation'
+import { useApplicationForm } from '@/composables/useApplicationForm'
+import { categories, categoryIdToProductsMap } from '@/data/categories'
 
 const router = useRouter()
 const route = useRoute()
-const loading = ref(false)
-const toastVisible = ref(false)
-const toastMessage = ref('')
-const toastType = ref<'success' | 'error'>('success')
 const selectedCategory = ref('')
 
-const form = reactive({
-  name: '',
-  email: '',
-  phone: '',
-  productCategory: '',
-  product: '',
-  description: ''
-})
-
-const errors = reactive<ValidationErrors>({
-  name: '',
-  email: '',
-  phone: '',
-  productCategory: '',
-  product: '',
-  description: ''
-})
-
-const categories = [
-  {
-    id: 'building_frames',
-    icon: '🏗️',
-    title: 'Каркасы зданий',
-    description: 'Фермы, каркасы ангаров, марши, опоры и перекрытия',
-    image: '/img/catalog/karkas.jpeg'
-  },
-  {
-    id: 'columns_beams',
-    icon: '🏢',
-    title: 'Колонны и балки',
-    description: 'Колонны стальные, двутавр, швеллер, уголок',
-    image: '/img/catalog/balki.png'
-  },
-  {
-    id: 'pipes',
-    icon: '🛠️',
-    title: 'Трубы',
-    description: 'Профильные, круглые, ВГП, нержавеющие',
-    image: '/img/catalog/trubi.jpeg'
-  },
-  {
-    id: 'piles',
-    icon: '📌',
-    title: 'Сваи',
-    description: 'Винтовые, забивные, свайные опоры',
-    image: '/img/catalog/svai.jpeg'
-  },
-  {
-    id: 'elbows',
-    icon: '↩️',
-    title: 'Отводы',
-    description: 'Сварные, бесшовные, из нержавейки',
-    image: '/img/inCategories/90.jpg'
-  },
-  {
-    id: 'others',
-    icon: '🧰',
-    title: 'Прочее (прочая металлопродукция)',
-    description: 'Арматура, листы, настилы, сетки, профнастил',
-    image: '/img/categories/platform.jpg'
-  }
-]
-
-
-// Карта изделий по категориям (для селекта)
-const categoryIdToProductsMap: Record<string, string[]> = {
-  building_frames: ['Металлические фермы', 'Металлокаркасы ангаров и цехов', 'Лестничные марши, пролёты', 'Опоры и перекрытия'],
-  columns_beams: ['Колонны стальные', 'Балки двутавровые', 'Швеллеры', 'Уголки'],
-  pipes: ['Трубы профильные', 'Трубы круглые', 'ВГП (водогазопроводные)', 'Трубы нержавеющие'],
-  piles: ['Винтовые сваи', 'Забивные сваи стальные', 'Свайные опоры'],
-  elbows: ['Отводы стальные сварные', 'Отводы бесшовные', 'Отводы из нержавейки'],
-  others: ['Арматура', 'Листы', 'Металлические настилы', 'Сетки сварные, рабица', 'Профнастил']
-}
+// Используем composable для формы
+const {
+  loading,
+  form,
+  errors,
+  formattedPhone,
+  toastVisible,
+  toastMessage,
+  toastType,
+  onPhoneInput,
+  onNameInput,
+  submitForm: baseSubmitForm
+} = useApplicationForm()
 
 const productOptions = computed(() => {
   return form.productCategory ? (categoryIdToProductsMap[form.productCategory] || []) : []
@@ -265,54 +201,6 @@ const onCategoryChange = () => {
   // при смене категории очищаем изделие
   form.product = ''
 }
-
-// Маска телефона: отображаем "+X (XXX) XXX-XX-XX", в модели храним только цифры
-const formatPhone = (digits: string): string => {
-  const d = (digits || '').replace(/\D/g, '')
-  const parts: string[] = []
-  if (!d) return ''
-  // Код страны
-  parts.push('+', d.substring(0, 1))
-  // Скобки и первые 3 цифры
-  if (d.length > 1) {
-    const a = d.substring(1, 4)
-    parts.push(' ', '(', a)
-    if (a.length === 3) parts.push(')')
-  }
-  // Следующие 3
-  if (d.length > 4) {
-    const b = d.substring(4, 7)
-    parts.push(' ', b)
-  }
-  // Две и две
-  if (d.length > 7) {
-    const c = d.substring(7, 9)
-    parts.push('-', c)
-  }
-  if (d.length > 9) {
-    const e2 = d.substring(9, 11)
-    parts.push('-', e2)
-  }
-  return parts.join('')
-}
-
-const formattedPhone = computed(() => formatPhone(form.phone))
-
-// Обработчик ввода: принимаем только цифры, ограничиваем длину
-const onPhoneInput = (e: Event) => {
-  const target = e.target as HTMLInputElement
-  // 1 цифра на код страны + максимум 10 цифр локального номера = 11 цифр всего
-  const onlyDigits = target.value.replace(/\D/g, '').slice(0, 11)
-  form.phone = onlyDigits
-}
-
-// Фильтрация имени: оставляем буквы RU/EN, пробел и дефис
-const onNameInput = (e: Event) => {
-  const target = e.target as HTMLInputElement
-  const filtered = target.value.replace(/[^A-Za-zА-Яа-яЁё\s\-]/g, '')
-  form.name = filtered
-}
-
 
 const selectCategory = (categoryId: string) => {
   selectedCategory.value = categoryId
@@ -339,67 +227,9 @@ onMounted(() => {
 })
 
 const submitForm = async () => {
-  // Очищаем предыдущие ошибки
-  Object.keys(errors).forEach(key => {
-    errors[key] = ''
-  })
-  
-  // Санитизируем данные
-  const sanitizedForm = {
-    name: sanitizeText(form.name),
-    email: form.email.trim(),
-    phone: form.phone,
-    productCategory: form.productCategory,
-    productTitle: sanitizeText(form.product),
-    description: sanitizeText(form.description)
-  }
-  
-  // Валидируем форму
-  const validationErrors = validateForm(sanitizedForm, applicationValidationRules)
-  
-  if (Object.keys(validationErrors).length > 0) {
-    Object.assign(errors, validationErrors)
-    return
-  }
-  
-  try {
-    loading.value = true
-    
-    const response = await axios.post('http://localhost:3000/applications', {
-      ...sanitizedForm
-    }, {
-      headers: {
-        // backend теперь игнорирует этот заголовок
-      }
-    })
-    
-    if (response.status === 201) {
-      toastType.value = 'success'
-      toastMessage.value = 'Заявка отправлена. Мы свяжемся с вами в ближайшее время.'
-      toastVisible.value = true
-      setTimeout(() => { toastVisible.value = false }, 3000)
-      // Сброс формы
-      form.name = ''
-      form.email = ''
-      form.phone = ''
-      form.productCategory = ''
-      form.product = ''
-      form.description = ''
-      selectedCategory.value = ''
-      
-      // Очистка ошибок
-      Object.keys(errors).forEach(key => {
-        errors[key as keyof typeof errors] = ''
-      })
-    }
-  } catch (error: any) {
-    console.error('Ошибка отправки заявки:', error)
-    toastType.value = 'error'
-    toastMessage.value = error.response?.data?.message || 'Ошибка отправки заявки'
-    toastVisible.value = true
-    setTimeout(() => { toastVisible.value = false }, 3500)
-  } finally {
-    loading.value = false
+  const success = await baseSubmitForm()
+  if (success) {
+    selectedCategory.value = ''
   }
 }
 </script>

@@ -134,87 +134,11 @@ import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import Header from '@/components/Header.vue'
 import Footer from '@/components/Footer.vue'
-import axios from 'axios'
-import { useEmailConfig } from '@/composables/useEmailConfig'
-import { validateForm, applicationValidationRules, sanitizeText, type ValidationErrors } from '@/utils/validation'
+import { useApplicationForm } from '@/composables/useApplicationForm'
+import { categoriesData, type Product } from '@/data/categories'
 
 const route = useRoute()
-const { getRecipientEmail } = useEmailConfig()
-
-interface Product {
-  id: string;
-  title: string;
-  description: string;
-  image: string;
-  fullDescription: string;
-  specifications: any[];
-  application: string;
-}
-
 const selectedProduct = ref<Product | null>(null)
-
-// Данные категорий с изделиями
-const categoriesData: Record<string, { title: string; description: string; products: Product[] }> = {
-  building_frames: {
-    title: 'Каркасы зданий',
-    description: 'Фермы, каркасы ангаров, марши, опоры и перекрытия',
-    products: [
-      { id: 'steel_trusses', title: 'Металлические фермы', description: 'Фермы покрытия и перекрытий', image: '/img/inCategories/fermi.jpg', fullDescription: 'Стальные фермы для больших пролетов.', specifications: [], application: '' },
-      { id: 'angar_frames', title: 'Металлокаркасы ангаров и цехов', description: 'Каркасы для ангаров/цехов', image: '/img/inCategories/portalFrame.jpg', fullDescription: 'Каркасные решения для промышленных зданий.', specifications: [], application: '' },
-      { id: 'stairs_flights', title: 'Лестничные марши, пролёты', description: 'Марши и площадки', image: '/img/categories/stairs.jpg', fullDescription: 'Лестничные марши и пролеты из металла.', specifications: [], application: '' },
-      { id: 'supports_slabs', title: 'Опоры и перекрытия', description: 'Опоры и элементы перекрытий', image: '/img/categories/columns.jpg', fullDescription: 'Опорные конструкции и элементы перекрытий.', specifications: [], application: '' }
-    ]
-  },
-  columns_beams: {
-    title: 'Колонны и балки',
-    description: 'Колонны стальные, двутавр, швеллер, уголок',
-    products: [
-      { id: 'steel_columns', title: 'Колонны стальные', description: 'Несущие колонны', image: '/img/inCategories/kolonniStalnie.jpg', fullDescription: 'Стальные колонны для каркасов.', specifications: [], application: '' },
-      { id: 'i_beams', title: 'Балки двутавровые', description: 'Двутавровые балки', image: '/img/inCategories/balkiStalnie.webp', fullDescription: 'Двутавры для перекрытий.', specifications: [], application: '' },
-      { id: 'channels', title: 'Швеллеры', description: 'Стальные швеллеры', image: '/img/categories/facade.webp', fullDescription: 'Швеллеры различных размеров.', specifications: [], application: '' },
-      { id: 'angles', title: 'Уголки', description: 'Стальные уголки', image: '/img/categories/columns.jpg', fullDescription: 'Равнополочные и неравнополочные уголки.', specifications: [], application: '' }
-    ]
-  },
-  pipes: {
-    title: 'Трубы',
-    description: 'Профильные, круглые, ВГП, нержавеющие',
-    products: [
-      { id: 'profile_pipes', title: 'Трубы профильные', description: 'Квадратные, прямоугольные', image: '/img/inCategories/trubiProfilnie.webp', fullDescription: 'Профильные трубы для каркасов.', specifications: [], application: '' },
-      { id: 'round_pipes', title: 'Трубы круглые', description: 'Бесшовные, электросварные', image: '/img/inCategories/trubiKruglie.jpeg', fullDescription: 'Круглые трубы различных диаметров.', specifications: [], application: '' },
-      { id: 'vgp', title: 'ВГП (водогазопроводные)', description: 'Трубы ВГП', image: '/img/categories/frame.webp', fullDescription: 'Трубы для водо- и газопроводов.', specifications: [], application: '' },
-      { id: 'stainless_pipes', title: 'Трубы нержавеющие', description: 'Нержавеющие трубы', image: '/img/inCategories/trubiNerjaveyushie.jpg', fullDescription: 'Трубы из AISI 304/316.', specifications: [], application: '' }
-    ]
-  },
-  piles: {
-    title: 'Сваи',
-    description: 'Винтовые, забивные, свайные опоры',
-    products: [
-      { id: 'screw_piles', title: 'Винтовые сваи', description: 'Быстрый монтаж', image: '/img/inCategories/svaiVintovie.jpeg', fullDescription: 'Винтовые сваи для лёгких сооружений.', specifications: [], application: '' },
-      { id: 'driven_piles', title: 'Забивные сваи стальные', description: 'Высокая несущая способность', image: '/img/inCategories/svaiZabivnie.jpeg', fullDescription: 'Забивные сваи для капитальных объектов.', specifications: [], application: '' },
-      { id: 'pile_supports', title: 'Свайные опоры', description: 'Опоры на сваях', image: '/img/categories/platform.jpg', fullDescription: 'Опоры для перекрытий и площадок.', specifications: [], application: '' }
-    ]
-  },
-  elbows: {
-    title: 'Отводы',
-    description: 'Сварные, бесшовные, из нержавейки',
-    products: [
-      { id: 'welded_elbows', title: 'Отводы стальные сварные', description: 'Сегментные отводы', image: '/img/inCategories/otvodiSegmentnie.jpeg', fullDescription: 'Сегментные отводы по ТЗ.', specifications: [], application: '' },
-      { id: 'seamless_elbows', title: 'Отводы бесшовные', description: 'Бесшовные колена', image: '/img/inCategories/45.jpg', fullDescription: 'Бесшовные колена для трубопроводов.', specifications: [], application: '' },
-      { id: 'stainless_elbows', title: 'Отводы из нержавейки', description: 'Нержавеющие отводы', image: '/img/inCategories/90.jpg', fullDescription: 'Отводы из AISI 304/316.', specifications: [], application: '' }
-    ]
-  },
-  others: {
-    title: 'Прочее (прочая металлопродукция)',
-    description: 'Арматура, листы, настилы, сетки, профнастил',
-    products: [
-      { id: 'rebar', title: 'Арматура', description: 'Стальная арматура', image: '/img/categories/columns.jpg', fullDescription: 'Горячекатаная арматура.', specifications: [], application: '' },
-      { id: 'sheets', title: 'Листы', description: 'Рифлёные, оцинкованные, перфорированные', image: '/img/inCategories/trubiProfilnie.webp', fullDescription: 'Стальные листы разных типов.', specifications: [], application: '' },
-      { id: 'gratings', title: 'Металлические настилы', description: 'Решетчатые настилы', image: '/img/inCategories/svaiVintovie.jpeg', fullDescription: 'Настилы для площадок и трапов.', specifications: [], application: '' },
-      { id: 'meshes', title: 'Сетки сварные, рабица', description: 'Сварные и плетёные сетки', image: '/img/inCategories/trubiKruglie.jpeg', fullDescription: 'Сетки для ограждений и армирования.', specifications: [], application: '' },
-      { id: 'profnastil', title: 'Профнастил', description: 'Профилированные листы', image: '/img/inCategories/trubiProfilnie.webp', fullDescription: 'Профнастил для кровли и ограждений.', specifications: [], application: '' }
-    ]
-  }
-}
 
 const categoryData = computed(() => {
   const categoryId = route.params.category as string
@@ -239,9 +163,7 @@ const scrollToSection = (sectionId: string) => {
   }
 }
 
-// Автоскролл при загрузке отключен — используется scrollBehavior роутера
-
-const showProductDetails = (product: any) => {
+const showProductDetails = (product: Product) => {
   selectedProduct.value = product
 }
 
@@ -249,107 +171,25 @@ const closeProductDetails = () => {
   selectedProduct.value = null
 }
 
-
-// Форма заявки (интегрированная)
-const pLoading = ref(false)
-const pForm = ref({
-  name: '',
-  email: '',
-  phone: '',
-  description: ''
-})
-const pErrors = ref<ValidationErrors>({
-  name: '',
-  email: '',
-  phone: '',
-  description: ''
-})
-
-
-const pFormatPhone = (digits: string): string => {
-  const d = (digits || '').replace(/\D/g, '')
-  if (!d) return ''
-  const parts: string[] = []
-  parts.push('+', d.substring(0, 1))
-  if (d.length > 1) {
-    const a = d.substring(1, 4)
-    parts.push(' ', '(', a)
-    if (a.length === 3) parts.push(')')
-  }
-  if (d.length > 4) {
-    const b = d.substring(4, 7)
-    parts.push(' ', b)
-  }
-  if (d.length > 7) {
-    const c = d.substring(7, 9)
-    parts.push('-', c)
-  }
-  if (d.length > 9) {
-    const e2 = d.substring(9, 11)
-    parts.push('-', e2)
-  }
-  return parts.join('')
-}
-
-const pFormattedPhone = computed(() => pFormatPhone(pForm.value.phone))
-
-const onPPhoneInput = (e: Event) => {
-  const target = e.target as HTMLInputElement
-  const onlyDigits = target.value.replace(/\D/g, '').slice(0, 11)
-  pForm.value.phone = onlyDigits
-}
-
-const onPNameInput = (e: Event) => {
-  const target = e.target as HTMLInputElement
-  pForm.value.name = target.value.replace(/[^A-Za-zА-Яа-яЁё\s\-]/g, '')
-}
+// Используем composable для формы
+const {
+  loading: pLoading,
+  form: pForm,
+  errors: pErrors,
+  formattedPhone: pFormattedPhone,
+  onPhoneInput: onPPhoneInput,
+  onNameInput: onPNameInput,
+  submitForm: baseSubmitForm
+} = useApplicationForm()
 
 const submitProductForm = async () => {
-  // Очищаем предыдущие ошибки
-  Object.keys(pErrors.value).forEach(key => {
-    pErrors.value[key] = ''
+  const success = await baseSubmitForm({
+    productCategory: route.params.category as string,
+    productTitle: selectedProduct.value?.title
   })
   
-  // Санитизируем данные
-  const sanitizedForm = {
-    name: sanitizeText(pForm.value.name),
-    email: pForm.value.email.trim(),
-    phone: pForm.value.phone,
-    description: sanitizeText(pForm.value.description)
-  }
-  
-  // Валидируем форму
-  const validationErrors = validateForm(sanitizedForm, applicationValidationRules)
-  
-  if (Object.keys(validationErrors).length > 0) {
-    Object.assign(pErrors.value, validationErrors)
-    return
-  }
-  
-  try {
-    pLoading.value = true
-    const payload = {
-      name: sanitizedForm.name,
-      email: sanitizedForm.email,
-      phone: sanitizedForm.phone,
-      description: sanitizedForm.description,
-      productCategory: route.params.category,
-      productTitle: selectedProduct.value?.title
-    }
-    const resp = await axios.post('http://localhost:3000/applications', payload, {
-      headers: {
-        'X-Recipient-Email': getRecipientEmail()
-      }
-    })
-    if (resp.status === 201) {
-      showToast('Заявка отправлена. Мы свяжемся с вами в ближайшее время.', 'success')
-    }
-    pForm.value = { name: '', email: '', phone: '', description: '' }
+  if (success) {
     closeProductDetails()
-  } catch (e: any) {
-    showToast(e.response?.data?.message || 'Ошибка отправки заявки', 'error')
-  } finally {
-    pLoading.value = false
   }
 }
 </script>
