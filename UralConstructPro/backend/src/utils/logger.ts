@@ -65,13 +65,22 @@ export class LoggerService {
   }
 
   logEmail(to: string, subject: string, success: boolean, error?: string) {
-    this.logger.info('Email sent', {
-      to,
-      subject,
-      success,
-      error,
-      context: 'Email'
-    });
+    if (success) {
+      this.logger.info('Email sent successfully', {
+        to,
+        subject,
+        success,
+        context: 'Email'
+      });
+    } else {
+      this.logger.error('Email sending failed', {
+        to,
+        subject,
+        success,
+        error,
+        context: 'Email'
+      });
+    }
   }
 
   logSecurity(event: string, ip?: string, userAgent?: string) {
@@ -83,3 +92,4 @@ export class LoggerService {
     });
   }
 }
+
